@@ -1,0 +1,95 @@
+---
+title: "Project 1"
+author: "Name:  Alex Yu \n Michael Minniear: "
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage{threeparttablex}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{makecell}
+  - \usepackage{xcolor}
+---
+```{r setup, include = FALSE}
+
+#### Load necessary packages ####
+# * These packages are not necessary to complete the assignment and or only used 
+#   to provide an example. 
+packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere")
+
+install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
+if (length(install_me)) install.packages(install_me)
+
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(readr)
+library(geosphere)
+```
+
+## Background
+The World Health Organization has recently employed a new data science initiative, *CSIT-165*, that uses data science to characterize pandemic diseases. 
+*CSIT-165* disseminates data driven analyses to global decision makers.
+
+*CSIT-165* is a conglomerate comprised of two fabricated entities: *Global Health Union (GHU)* and *Private Diagnostic Laboratories (PDL)*. 
+Your and your partner's role is to play a data scientist from one of these two entities.
+
+## Data
+> [2019 Novel Coronavirus COVID-19 (2019-nCoV) Data Repository by John Hopkins CSSE](https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series)
+
+Data for 2019 Novel Coronavirus is operated by the John Hopkins University Center for Systems Science and Engineering (JHU CSSE).
+Data includes daily time series CSV summary tables, including confirmations, recoveries, and deaths. 
+Country/region are countries/regions hat conform to World Health Organization (WHO).
+Lat and Long refer to coordinates references for the user. 
+Date fields are stored in MM/DD/YYYY format.
+
+## Project Objectives
+
+### Objective 1
+```{r ob1}
+
+```
+
+### Objective 2
+```{r ob2}
+
+```
+
+### Objective 3
+```{r ob3}
+
+```
+
+### Objective 4
+
+#### Objective 4.1
+```{r ob4.1}
+
+```
+
+#### Objective 4.2
+```{r ob4.2}
+
+```
+
+### GitHub Log
+```{bash gitlog} 
+git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
+```
+
+
+
+
+
