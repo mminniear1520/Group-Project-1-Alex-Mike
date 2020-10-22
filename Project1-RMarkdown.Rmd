@@ -23,7 +23,8 @@ output:
 #   - \usepackage{makecell}
 #   - \usepackage{xcolor}
 ---
-```{r setup, include = FALSE}
+```{r setup1, include = FALSE}
+knitr::opts_chunk$set(include = FALSE)
 
 #### Load necessary packages ####
 # * These packages are not necessary to complete the assignment and or only used
@@ -43,8 +44,22 @@ output:
 # library(magrittr)
 # library(readr)
 library(geosphere)
-library(kable)
 ```
+
+<!-- load the excel files into named data frames -->
+
+```{r setup2, include = FALSE}
+
+# file links are directed to GitHub source
+# NOTE - .csv files need to be saved to the same directory as this .Rmd file
+
+dfConfirmed <- read.csv("./time_series_covid19_confirmed_global.csv", stringsAsFactors = FALSE)
+
+dfDeaths <- read.csv("./time_series_covid19_deaths_global.csv", stringsAsFactors = FALSE)
+
+dfRecovered <- read.csv("./time_series_covid19_recovered_global.csv", stringsAsFactors = FALSE)
+```
+
 
 ## Background
 The World Health Organization has recently employed a new data science initiative, *CSIT-165*, that uses data science to characterize pandemic diseases.
@@ -65,10 +80,10 @@ Date fields are stored in MM/DD/YYYY format.
 ## Project Objectives
 
 <!-- Objective 1 -->
-<!-- CSIT-165's first objective is to determine where COVID-19 originated from. Predict where the origin started based on the number of cases on the first recorded day for confirmation, recovery, and death. Why do you believe this area to be the origin? Show this is the origin using a conditional statment if possible. -->
+<!-- CSIT-165's first objective is to determine where COVID-19 originated from. Predict where the origin started based on the number of cases on the first recorded day for confirmation, recovery, and death. Why do you believe this area to be the origin? Show this is the origin using a conditional statement if possible. -->
 
 ### Objective 1
-```{r ob1}
+```{r ob1-01, echo=TRUE}
 
 ```
 
@@ -81,7 +96,7 @@ Date fields are stored in MM/DD/YYYY format.
 ```
 
 <!-- Objective 3 -->
-<!-- How far away is this most recent case(s) from where the first confirmed case(s) occurred? Please provide answer(s) in terms of miles. Use the R package geosphere to calcualte the distance between two coordinates in meters (geosphere::distm). You will need to convert the value returned by distm from meters to miles (this conversion is simple and can be found online). Please use a table or printed statement to describe what Province/State and Country/Region first confirmed cases occurred as well as the distance (in miles) away from the origin. Please print the following:
+<!-- How far away is this most recent case(s) from where the first confirmed case(s) occurred? Please provide answer(s) in terms of miles. Use the R package geosphere to calculate the distance between two coordinates in meters (geosphere::distm). You will need to convert the value returned by distm from meters to miles (this conversion is simple and can be found online). Please use a table or printed statement to describe what Province/State and Country/Region first confirmed cases occurred as well as the distance (in miles) away from the origin. Please print the following:
 
 {recent city} is {distance in miles} away from {origin city, origin country}
 
