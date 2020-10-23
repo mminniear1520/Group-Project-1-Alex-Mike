@@ -22,11 +22,13 @@ header-includes:
   - \usepackage{makecell}
   - \usepackage{xcolor}
 ---
-```{r setup, include = FALSE}
+```{r setup1, include = FALSE}
+knitr::opts_chunk$set(include = FALSE)
 
 #### Load necessary packages ####
 # * These packages are not necessary to complete the assignment and or only used
 #   to provide an example.
+<<<<<<< HEAD
 #packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
 
 #install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
@@ -38,6 +40,13 @@ header-includes:
 #library(readr)
 #library(geosphere)
 
+=======
+
+# packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
+
+# install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
+# if (length(install_me)) install.packages(install_me)
+>>>>>>> 56faa99996f80e26efcddc6864e3e888a474b33b
 
 
 #  These are the libraries I used for Project 1
@@ -46,9 +55,26 @@ library(dplyr)
 library(maps)
 library(mapproj)
 library(readr)
+<<<<<<< HEAD
 library(magrittr)
-
+=======
 ```
+
+<!-- load the excel files into named data frames -->
+
+```{r setup2, include = FALSE}
+>>>>>>> 56faa99996f80e26efcddc6864e3e888a474b33b
+
+# file links are directed to GitHub source
+# NOTE - .csv files need to be saved to the same directory as this .Rmd file
+
+# dfConfirmed <- read.csv("./time_series_covid19_confirmed_global.csv", stringsAsFactors = FALSE)
+# 
+# dfDeaths <- read.csv("./time_series_covid19_deaths_global.csv", stringsAsFactors = FALSE)
+# 
+# dfRecovered <- read.csv("./time_series_covid19_recovered_global.csv", stringsAsFactors = FALSE)
+```
+
 
 ## Background
 The World Health Organization has recently employed a new data science initiative, *CSIT-165*, that uses data science to characterize pandemic diseases.
@@ -68,10 +94,11 @@ Date fields are stored in MM/DD/YYYY format.
 
 ## Project Objectives
 
+<!-- Objective 1 -->
+<!-- CSIT-165's first objective is to determine where COVID-19 originated from. Predict where the origin started based on the number of cases on the first recorded day for confirmation, recovery, and death. Why do you believe this area to be the origin? Show this is the origin using a conditional statement if possible. -->
+
 ### Objective 1
-
-```{r}
-
+```{r ob1-01}
 # Identify working directory and set working directory to cloned repo
 
 #getwd()
@@ -116,7 +143,7 @@ origin(recovered)
 ```
 
 
-```{r}
+```{r ob1-02}
 # Map the location of the intial occurences with bubble chart
 
 
@@ -140,33 +167,75 @@ ggplot() +
   #geom_text_repel(data=cases_china %>% head(10), aes(x=long, y=lat, label=Province), size=3) +
   #geom_point(data=cases_china_map %>% head(3), aes(x=long, y=lat), color="red", size=2) +
   theme(legend.position="none")
-
-
 ```
+
+
+
+<!-- Objective 2 -->
+<!-- Where is the most recent area to have a first confirmed case? If appropriate, please list all areas that had a first confirmed case if they occurred on the same day. -->
 
 ### Objective 2
 ```{r ob2}
 
 ```
 
+<!-- Objective 3 -->
+<!-- How far away is this most recent case(s) from where the first confirmed case(s) occurred? Please provide answer(s) in terms of miles. Use the R package geosphere to calculate the distance between two coordinates in meters (geosphere::distm). You will need to convert the value returned by distm from meters to miles (this conversion is simple and can be found online). Please use a table or printed statement to describe what Province/State and Country/Region first confirmed cases occurred as well as the distance (in miles) away from the origin. Please print the following:
+
+{recent city} is {distance in miles} away from {origin city, origin country}
+
+If more than one recent city exists, print the statement above for each city in order of distance from origin. -->
+
 ### Objective 3
 ```{r ob3}
 
 ```
 
+
+<!-- Objective 4 -->
+<!-- CSIT-165 characterizes diseases usnig different metrics. Risk score, risk_score, and burden score, burden_score, are particularly important for characterizing disease impact. Risk score is calculated as the ratio of deaths to recoveries, that is:
+
+risk = sum of deaths / sum of recoveries
+
+Areas that are characterized as being especially vulnerable to loss if they have higher risk scores. Death burden score is calculated as the product of confirmed and risk score, that is:
+
+burden = (sum of confirmed) x risk
+
+Areas with high burden scores are expected to have large losses. -->
+
 ### Objective 4
+
+
+<!-- Objective 4.1 -->
+<!-- Which area of the world currently has the lowest risk score?
+- Which area of the world currently has the highest risk score?
+- How do risk scores in these areas compare to global risk score?
+- How do most risky and least risky areas of the world compare in terms of death burden?
+- Do these values seem reasonable?
+- What are some possible causes for this discrepancy?
+- Why might it be helpful to calculate metrics like risk scores or burden scores for different areas of the world and what would its limitations be (what assumptions does it make and important variables might be left out)? -->
 
 #### Objective 4.1
 ```{r ob4.1}
 
 ```
 
+<!-- Objective 4.2 -->
+<!-- You are asked to make three tables with the top 5 countries that have the most COVID-19 related confirmations, recoveries, and deaths. Make sure to include all of the counts for the country, not just the counts for one area in the country. To do this we will need to sum all of the values for each country, create new data frames from these values, and use the package kable to convert those data frames into tables. Hint: packages like dplyr make group operations easy, but they are not necessary (though we will be relying on those packages in the future because of their ease of use). Without these packages, it is possible to sum each country's counts by subsetting the data frame using a list of countries available in the data set. Use a for loop to iterate through the data frame using the list of countries. For each country, calculate the count sum and assign this value to the list. -->
+
 #### Objective 4.2
 ```{r ob4.2}
 
 ```
 
+<<<<<<< HEAD
 ### GitHub Log
 #```{bash gitlog}
 #git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
 #```
+=======
+<!-- ### GitHub Log -->
+<!-- ```{bash gitlog} -->
+<!-- git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b" -->
+<!-- ``` -->
+>>>>>>> 56faa99996f80e26efcddc6864e3e888a474b33b
