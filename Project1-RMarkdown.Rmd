@@ -27,7 +27,7 @@ header-includes:
 #### Load necessary packages ####
 # * These packages are not necessary to complete the assignment and or only used
 #   to provide an example.
-packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere")
+packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
 
 install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
 if (length(install_me)) install.packages(install_me)
@@ -37,6 +37,14 @@ library(kableExtra)
 library(magrittr)
 library(readr)
 library(geosphere)
+
+#  These are the libraries I used for Project 1
+library(ggplot2)
+library(dplyr)
+library(maps)
+library(mapproj)
+library(readr)
+
 ```
 
 ## Background
@@ -58,7 +66,78 @@ Date fields are stored in MM/DD/YYYY format.
 ## Project Objectives
 
 ### Objective 1
-```{r ob1}
+
+```{r}
+
+# Identify working directory and set working directory to cloned repo
+
+#getwd()
+#setwd("C:/Users/micha/GitHub/Group-Project-1/Group-Project-1-Alex-Mike")
+
+# Assign variable for file names
+
+filename = "time_series_covid19_deaths_global.csv"
+filename_rec = "time_series_covid19_recovered_global.csv"
+filename_conf = "time_series_covid19_confirmed_global.csv"
+
+# Read files and set variables for with the covid19 global deaths, recoveries, and confirmed cases, respectively
+deaths <- read_delim(file = filename, delim = ",")
+head(deaths)
+
+recovered <- read_delim(file = filename_rec, delim = ",")
+head(recovered)
+
+confirmed <- read_delim(file = filename_conf, delim = ",")
+head(confirmed)
+
+# Review of datasets revealed ordered columns with earliest date is 1/22/20 which is column 5 in the datasets
+# Select and view rows from datasets where that have positive number (greater than 0) of confirmed cases on 1/22/20
+cases <- confirmed[confirmed$`1/22/20` > 0, 1:5]
+head(cases)
+
+# Sort cases to see where the highest number of cases are on the initial date
+cases_sort <- cases[order(cases$'1/22/20', decreasing = TRUE),]
+head(cases_sort)
+
+# Create a quick function to determine the max value on initial date for each file
+
+origin <- function(df){
+  print(df[which.max(df$`1/22/20`),1:2])
+}
+
+# Check to country and province for each file with highest initial occurences
+
+origin(confirmed)
+origin(deaths)
+origin(recovered)
+```
+
+
+```{r}
+# Map the location of the intial occurences with bubble chart
+
+
+CH <- map_data("world") %>% filter(region=="China")
+
+# Create a data frame with data from China only
+cases_china <- cases_sort[cases_sort$`Country/Region` == "China",]
+print(cases_china, n=Inf)
+
+# Change column names to make it easier to use mapping functions
+
+newcolnames <- c("Province","Country","lat","long","cases")
+colnames(cases_china) <- newcolnames
+head(cases_china)
+
+
+# Use ggplot to plot top locations of initial confirmed cases using cases for bubble size
+ggplot() +
+  geom_polygon(data = CH, aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
+  geom_point(data=cases_china, aes(x=long, y=lat, alpha=cases, size = cases)) +
+  geom_text_repel(data=cases_china %>% head(10), aes(x=long, y=lat, label=Province), size=3) +
+  #geom_point(data=cases_china_map %>% head(3), aes(x=long, y=lat), color="red", size=2) +
+  theme(legend.position="none")
+
 
 ```
 
