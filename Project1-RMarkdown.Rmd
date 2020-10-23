@@ -28,25 +28,11 @@ knitr::opts_chunk$set(include = FALSE)
 #### Load necessary packages ####
 # * These packages are not necessary to complete the assignment and or only used
 #   to provide an example.
-<<<<<<< HEAD
-#packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
-
-#install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
-#if (length(install_me)) install.packages(install_me)
-
-#library(knitr)
-#library(kableExtra)
-#library(magrittr)
-#library(readr)
-#library(geosphere)
-
-=======
 
 # packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
 
 # install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
 # if (length(install_me)) install.packages(install_me)
->>>>>>> 56faa99996f80e26efcddc6864e3e888a474b33b
 
 
 #  These are the libraries I used for Project 1
@@ -55,23 +41,19 @@ library(dplyr)
 library(maps)
 library(mapproj)
 library(readr)
-<<<<<<< HEAD
-library(magrittr)
-=======
 ```
 
 <!-- load the excel files into named data frames -->
 
 ```{r setup2, include = FALSE}
->>>>>>> 56faa99996f80e26efcddc6864e3e888a474b33b
 
 # file links are directed to GitHub source
 # NOTE - .csv files need to be saved to the same directory as this .Rmd file
 
 # dfConfirmed <- read.csv("./time_series_covid19_confirmed_global.csv", stringsAsFactors = FALSE)
-# 
+#
 # dfDeaths <- read.csv("./time_series_covid19_deaths_global.csv", stringsAsFactors = FALSE)
-# 
+#
 # dfRecovered <- read.csv("./time_series_covid19_recovered_global.csv", stringsAsFactors = FALSE)
 ```
 
@@ -228,14 +210,7 @@ Areas with high burden scores are expected to have large losses. -->
 
 ```
 
-<<<<<<< HEAD
-### GitHub Log
-#```{bash gitlog}
-#git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
-#```
-=======
 <!-- ### GitHub Log -->
 <!-- ```{bash gitlog} -->
 <!-- git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b" -->
 <!-- ``` -->
->>>>>>> 56faa99996f80e26efcddc6864e3e888a474b33b
