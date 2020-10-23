@@ -3,7 +3,7 @@ title: "Project 1"
 author: "Name:  Alex Yu \n Michael Minniear: "
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
+  html_document:
     toc: true
     toc_depth: 3
 header-includes:
@@ -27,16 +27,18 @@ header-includes:
 #### Load necessary packages ####
 # * These packages are not necessary to complete the assignment and or only used
 #   to provide an example.
-packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
+#packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
 
-install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
-if (length(install_me)) install.packages(install_me)
+#install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
+#if (length(install_me)) install.packages(install_me)
 
-library(knitr)
-library(kableExtra)
-library(magrittr)
-library(readr)
-library(geosphere)
+#library(knitr)
+#library(kableExtra)
+#library(magrittr)
+#library(readr)
+#library(geosphere)
+
+
 
 #  These are the libraries I used for Project 1
 library(ggplot2)
@@ -44,6 +46,7 @@ library(dplyr)
 library(maps)
 library(mapproj)
 library(readr)
+library(magrittr)
 
 ```
 
@@ -82,22 +85,22 @@ filename_conf = "time_series_covid19_confirmed_global.csv"
 
 # Read files and set variables for with the covid19 global deaths, recoveries, and confirmed cases, respectively
 deaths <- read_delim(file = filename, delim = ",")
-head(deaths)
+#head(deaths)
 
 recovered <- read_delim(file = filename_rec, delim = ",")
-head(recovered)
+#head(recovered)
 
 confirmed <- read_delim(file = filename_conf, delim = ",")
-head(confirmed)
+#head(confirmed)
 
 # Review of datasets revealed ordered columns with earliest date is 1/22/20 which is column 5 in the datasets
 # Select and view rows from datasets where that have positive number (greater than 0) of confirmed cases on 1/22/20
 cases <- confirmed[confirmed$`1/22/20` > 0, 1:5]
-head(cases)
+#head(cases)
 
 # Sort cases to see where the highest number of cases are on the initial date
 cases_sort <- cases[order(cases$'1/22/20', decreasing = TRUE),]
-head(cases_sort)
+#head(cases_sort)
 
 # Create a quick function to determine the max value on initial date for each file
 
@@ -121,20 +124,20 @@ CH <- map_data("world") %>% filter(region=="China")
 
 # Create a data frame with data from China only
 cases_china <- cases_sort[cases_sort$`Country/Region` == "China",]
-print(cases_china, n=Inf)
+#print(cases_china, n=Inf)
 
 # Change column names to make it easier to use mapping functions
 
 newcolnames <- c("Province","Country","lat","long","cases")
 colnames(cases_china) <- newcolnames
-head(cases_china)
+#head(cases_china)
 
 
 # Use ggplot to plot top locations of initial confirmed cases using cases for bubble size
 ggplot() +
   geom_polygon(data = CH, aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
   geom_point(data=cases_china, aes(x=long, y=lat, alpha=cases, size = cases)) +
-  geom_text_repel(data=cases_china %>% head(10), aes(x=long, y=lat, label=Province), size=3) +
+  #geom_text_repel(data=cases_china %>% head(10), aes(x=long, y=lat, label=Province), size=3) +
   #geom_point(data=cases_china_map %>% head(3), aes(x=long, y=lat), color="red", size=2) +
   theme(legend.position="none")
 
@@ -164,6 +167,6 @@ ggplot() +
 ```
 
 ### GitHub Log
-```{bash gitlog}
-git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
-```
+#```{bash gitlog}
+#git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
+#```
