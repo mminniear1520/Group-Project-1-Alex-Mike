@@ -3,7 +3,7 @@ title: "Project 1"
 author: "Name:  Alex Yu \n Michael Minniear: "
 date: "`r Sys.Date()`"
 output:
-  html_document:
+  pdf_document:
     toc: true
     toc_depth: 3
 header-includes:
@@ -34,6 +34,11 @@ knitr::opts_chunk$set(include = FALSE)
 # install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
 # if (length(install_me)) install.packages(install_me)
 
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(readr)
+library(geosphere)
 
 #  These are the libraries I used for Project 1
 library(ggplot2)
@@ -51,9 +56,9 @@ library(readr)
 # NOTE - .csv files need to be saved to the same directory as this .Rmd file
 
 # dfConfirmed <- read.csv("./time_series_covid19_confirmed_global.csv", stringsAsFactors = FALSE)
-#
+# 
 # dfDeaths <- read.csv("./time_series_covid19_deaths_global.csv", stringsAsFactors = FALSE)
-#
+# 
 # dfRecovered <- read.csv("./time_series_covid19_recovered_global.csv", stringsAsFactors = FALSE)
 ```
 
@@ -94,22 +99,22 @@ filename_conf = "time_series_covid19_confirmed_global.csv"
 
 # Read files and set variables for with the covid19 global deaths, recoveries, and confirmed cases, respectively
 deaths <- read_delim(file = filename, delim = ",")
-#head(deaths)
+head(deaths)
 
 recovered <- read_delim(file = filename_rec, delim = ",")
-#head(recovered)
+head(recovered)
 
 confirmed <- read_delim(file = filename_conf, delim = ",")
-#head(confirmed)
+head(confirmed)
 
 # Review of datasets revealed ordered columns with earliest date is 1/22/20 which is column 5 in the datasets
 # Select and view rows from datasets where that have positive number (greater than 0) of confirmed cases on 1/22/20
 cases <- confirmed[confirmed$`1/22/20` > 0, 1:5]
-#head(cases)
+head(cases)
 
 # Sort cases to see where the highest number of cases are on the initial date
 cases_sort <- cases[order(cases$'1/22/20', decreasing = TRUE),]
-#head(cases_sort)
+head(cases_sort)
 
 # Create a quick function to determine the max value on initial date for each file
 
@@ -133,13 +138,13 @@ CH <- map_data("world") %>% filter(region=="China")
 
 # Create a data frame with data from China only
 cases_china <- cases_sort[cases_sort$`Country/Region` == "China",]
-#print(cases_china, n=Inf)
+print(cases_china, n=Inf)
 
 # Change column names to make it easier to use mapping functions
 
 newcolnames <- c("Province","Country","lat","long","cases")
 colnames(cases_china) <- newcolnames
-#head(cases_china)
+head(cases_china)
 
 
 # Use ggplot to plot top locations of initial confirmed cases using cases for bubble size
@@ -175,7 +180,7 @@ If more than one recent city exists, print the statement above for each city in 
 
 
 <!-- Objective 4 -->
-<!-- CSIT-165 characterizes diseases usnig different metrics. Risk score, risk_score, and burden score, burden_score, are particularly important for characterizing disease impact. Risk score is calculated as the ratio of deaths to recoveries, that is:
+<!-- CSIT-165 characterizes diseases using different metrics. Risk score, risk_score, and burden score, burden_score, are particularly important for characterizing disease impact. Risk score is calculated as the ratio of deaths to recoveries, that is:
 
 risk = sum of deaths / sum of recoveries
 
@@ -200,7 +205,73 @@ Areas with high burden scores are expected to have large losses. -->
 #### Objective 4.1
 ```{r ob4.1}
 
+##### remove this section once the project is ready to merge
+##### ---
+library(readr)
+library(dplyr)
+filename = "time_series_covid19_deaths_global.csv"
+filename_rec = "time_series_covid19_recovered_global.csv"
+filename_conf = "time_series_covid19_confirmed_global.csv"
+deaths <- read_delim(file = filename, delim = ",")
+# head(deaths)
+recovered <- read_delim(file = filename_rec, delim = ",")
+# head(recovered)
+confirmed <- read_delim(file = filename_conf, delim = ",")
+# head(confirmed)
+##### ---
+##### remove the above once project is ready to merge
+
+
+# Extract the country, province, and lat/long labels from each of the datasets
+# Remember that the Confirmed dataset has fewer rows of data than the others
+dfDeaths <- deaths[, c("Province/State", "Country/Region", "Lat", "Long")]
+dfRecovered <- recovered[, c("Province/State", "Country/Region", "Lat", "Long")]
+dfConfirmed <- confirmed[, c("Province/State", "Country/Region", "Lat", "Long")]
+
+# Sums by country (by row) all cumulative figures
+mTotalDeaths <- rowSums(deaths[, -c(1,2,3,4)])
+mTotalRecoveries <- rowSums(recovered[, -c(1,2,3,4)])
+mTotalConfirmed <- rowSums(confirmed[, -c(1,2,3,4)])
+
+# Adds the sum vector to the corresponding Data Frames
+# The Data Frames will now hold both the four country/location labels and the total counts
+dfDeaths["Total Deaths"] <- mTotalDeaths
+dfRecovered["Total Recovered"] <- mTotalRecoveries
+dfConfirmed["Total Confirmed"] <- mTotalConfirmed
+
+# Merges the Deaths and Recovered tables together based on matches in the first four columns
+dfCombinedRisk <- merge(dfDeaths, dfRecovered, by=c("Province/State", "Country/Region", "Lat", "Long") )
+
+# Adds a new column for Risk Score, calculated by the Total Deaths and Total Recoveries
+dfCombinedRisk["Risk Score"] <- dfCombinedRisk$"Total Deaths" / dfCombinedRisk$"Total Recovered"
+
+# Creates a new Data Frame with the totals
+dfCombinedRiskTotals <- data.frame("Province/State"="TOTALS", "Country/Region"=NA, "Lat"=NA, "Long"=NA, "Total Deaths"=sum(dfCombinedRisk$`Total Deaths`), "Total Recovered"=sum(dfCombinedRisk$`Total Recovered`) )
+dfCombinedRiskTotals["Risk Score"] <- dfCombinedRiskTotals$Total.Deaths / dfCombinedRiskTotals$Total.Recovered
+
+# Sort by Risk Score (descending)
+sort1.dfCombinedRisk <- dfCombinedRisk[order(-dfCombinedRisk$`Risk Score`),]
+
+# show the sorted results of Total Deaths and Total Recoveries, displays as tibble
+head( as_tibble(sort1.dfCombinedRisk) )
 ```
+
+The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0006.
+
+The area of the world that has the highest risk score is the United Kingdom, with a risk score of over 1761.  This figure appears to be an outlier, perhaps due to poor data collection, and the next highest risk score is Belgium, with a score of 0.56.
+
+Both of these individual countries' scores are vastly different compared to the global risk score of 0.06.
+
+The values for certain countries seems unreasonable.  For example, the UK has a risk score of over 1700, meaning that the total number of deaths is over 1,700 times the total number of recoveries.  Were this number true, it would signify that COVID-19 is fatal to anyone unfortunate to contract it.  However, this figure represents an outlier, likely due to low quality of data, given that the second highest risk score in the dataset is Belgium at 0.56.
+
+On the other end of the spectrum, there are 27 countries with a risk score of 0, indicating that there were no deaths recorded in the country, but also that there was at least 1 recovery.  (If both were 0, the value would return as undefined.)  This may suggest that that particular country's death tally is not being tracked, or it could also mean that the country has done a splendid job at preventing deaths due to the virus.
+
+While the risk score can be a helpful metric, it can also be unintentionally skewed higher or lower depending on the underlying number of deaths versus confirmed cases.  For example, a country that is highly successful at preventing the spread of COVID-19 but sees infected patients die at a high instance (perhaps due to poor health services) may show a high risk score even though the magnitude of total deaths is in the hundreds of people.  On the other hand, a country that cannot contain the virus, but has the medical services to keep infected patients alive may show a lower risk score, even if that particular country has millions of active cases.  This risk score considers deaths to be of higher importance than confirmed cases, which may be a limitation, especially for practitioners who are seeking to make forward-looking estimates.
+
+Additionally, the risk score uses the aggregate number of deaths and recoveries to date since January 22, 2020 as part of its calculation, regardless of the trends for a particular country.  Countries that may have improving recent data may warrant a lower risk score, but the risk score does not adjust for any recent patterns in data.
+
+
+
 
 <!-- Objective 4.2 -->
 <!-- You are asked to make three tables with the top 5 countries that have the most COVID-19 related confirmations, recoveries, and deaths. Make sure to include all of the counts for the country, not just the counts for one area in the country. To do this we will need to sum all of the values for each country, create new data frames from these values, and use the package kable to convert those data frames into tables. Hint: packages like dplyr make group operations easy, but they are not necessary (though we will be relying on those packages in the future because of their ease of use). Without these packages, it is possible to sum each country's counts by subsetting the data frame using a list of countries available in the data set. Use a for loop to iterate through the data frame using the list of countries. For each country, calculate the count sum and assign this value to the list. -->
