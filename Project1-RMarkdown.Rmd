@@ -3,7 +3,7 @@ title: "Project 1"
 author: "Name:  Alex Yu \n Michael Minniear: "
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
+  html_document:
     toc: true
     toc_depth: 3
 header-includes:
@@ -34,32 +34,12 @@ knitr::opts_chunk$set(include = FALSE)
 # install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
 # if (length(install_me)) install.packages(install_me)
 
-library(knitr)
-library(kableExtra)
-library(magrittr)
-library(readr)
-library(geosphere)
-
 #  These are the libraries I used for Project 1
 library(ggplot2)
 library(dplyr)
 library(maps)
 library(mapproj)
 library(readr)
-```
-
-<!-- load the excel files into named data frames -->
-
-```{r setup2, include = FALSE}
-
-# file links are directed to GitHub source
-# NOTE - .csv files need to be saved to the same directory as this .Rmd file
-
-# dfConfirmed <- read.csv("./time_series_covid19_confirmed_global.csv", stringsAsFactors = FALSE)
-# 
-# dfDeaths <- read.csv("./time_series_covid19_deaths_global.csv", stringsAsFactors = FALSE)
-# 
-# dfRecovered <- read.csv("./time_series_covid19_recovered_global.csv", stringsAsFactors = FALSE)
 ```
 
 
@@ -99,22 +79,22 @@ filename_conf = "time_series_covid19_confirmed_global.csv"
 
 # Read files and set variables for with the covid19 global deaths, recoveries, and confirmed cases, respectively
 deaths <- read_delim(file = filename, delim = ",")
-head(deaths)
+# head(deaths)
 
 recovered <- read_delim(file = filename_rec, delim = ",")
-head(recovered)
+# head(recovered)
 
 confirmed <- read_delim(file = filename_conf, delim = ",")
-head(confirmed)
+# head(confirmed)
 
 # Review of datasets revealed ordered columns with earliest date is 1/22/20 which is column 5 in the datasets
 # Select and view rows from datasets where that have positive number (greater than 0) of confirmed cases on 1/22/20
 cases <- confirmed[confirmed$`1/22/20` > 0, 1:5]
-head(cases)
+# head(cases)
 
 # Sort cases to see where the highest number of cases are on the initial date
 cases_sort <- cases[order(cases$'1/22/20', decreasing = TRUE),]
-head(cases_sort)
+# head(cases_sort)
 
 # Create a quick function to determine the max value on initial date for each file
 
@@ -138,13 +118,13 @@ CH <- map_data("world") %>% filter(region=="China")
 
 # Create a data frame with data from China only
 cases_china <- cases_sort[cases_sort$`Country/Region` == "China",]
-print(cases_china, n=Inf)
+# print(cases_china, n=Inf)
 
 # Change column names to make it easier to use mapping functions
 
 newcolnames <- c("Province","Country","lat","long","cases")
 colnames(cases_china) <- newcolnames
-head(cases_china)
+# head(cases_china)
 
 
 # Use ggplot to plot top locations of initial confirmed cases using cases for bubble size
@@ -203,7 +183,7 @@ Areas with high burden scores are expected to have large losses. -->
 - Why might it be helpful to calculate metrics like risk scores or burden scores for different areas of the world and what would its limitations be (what assumptions does it make and important variables might be left out)? -->
 
 #### Objective 4.1
-```{r ob4.1}
+```{r ob4.1-01}
 
 ##### remove this section once the project is ready to merge
 ##### ---
@@ -249,14 +229,28 @@ dfCombinedRisk["Risk Score"] <- dfCombinedRisk$"Total Deaths" / dfCombinedRisk$"
 dfCombinedRiskTotals <- data.frame("Province/State"="TOTALS", "Country/Region"=NA, "Lat"=NA, "Long"=NA, "Total Deaths"=sum(dfCombinedRisk$`Total Deaths`), "Total Recovered"=sum(dfCombinedRisk$`Total Recovered`) )
 dfCombinedRiskTotals["Risk Score"] <- dfCombinedRiskTotals$Total.Deaths / dfCombinedRiskTotals$Total.Recovered
 
-# Sort by Risk Score (descending)
-sort1.dfCombinedRisk <- dfCombinedRisk[order(-dfCombinedRisk$`Risk Score`),]
+# Creates a new Data Frame excluding rows with risk score of 0
+exclzero.dfCombinedRisk <- filter(dfCombinedRisk, dfCombinedRisk$`Risk Score` > 0)
 
-# show the sorted results of Total Deaths and Total Recoveries, displays as tibble
-head( as_tibble(sort1.dfCombinedRisk) )
 ```
 
-The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0006.
+```{r ob4.1-02, echo=FALSE}
+# Sorts by Risk Score (ascending)
+exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(exclzero.dfCombinedRisk$`Risk Score`),]
+
+# show the sorted results of Total Deaths and Total Recoveries, displays as tibble
+head( as_tibble(exclzero.dfCombinedRisk), 6 )
+```
+
+The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0006. (Inf values are ignored.)
+
+```{r ob4.1-03, echo=FALSE}
+# Sorts by Risk Score (descending)
+exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(-exclzero.dfCombinedRisk$`Risk Score`),]
+
+# show the sorted results of Total Deaths and Total Recoveries, displays as tibble
+head( as_tibble(exclzero.dfCombinedRisk), 6 )
+```
 
 The area of the world that has the highest risk score is the United Kingdom, with a risk score of over 1761.  This figure appears to be an outlier, perhaps due to poor data collection, and the next highest risk score is Belgium, with a score of 0.56.
 
