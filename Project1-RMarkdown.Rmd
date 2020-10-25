@@ -208,10 +208,10 @@ dfDeaths <- deaths[, c("Province/State", "Country/Region", "Lat", "Long")]
 dfRecovered <- recovered[, c("Province/State", "Country/Region", "Lat", "Long")]
 dfConfirmed <- confirmed[, c("Province/State", "Country/Region", "Lat", "Long")]
 
-# Sums by country (by row) all cumulative figures
-mTotalDeaths <- rowSums(deaths[, -c(1,2,3,4)])
-mTotalRecoveries <- rowSums(recovered[, -c(1,2,3,4)])
-mTotalConfirmed <- rowSums(confirmed[, -c(1,2,3,4)])
+# Extracts by country (by row) a matrix containing only the final column
+mTotalDeaths <- deaths[, ncol(deaths)]
+mTotalRecoveries <- recovered[, ncol(recovered)]
+mTotalConfirmed <- confirmed[, ncol(confirmed)]
 
 # Adds the sum vector to the corresponding Data Frames
 # The Data Frames will now hold both the four country/location labels and the total counts
@@ -271,9 +271,43 @@ Additionally, the risk score uses the aggregate number of deaths and recoveries 
 <!-- You are asked to make three tables with the top 5 countries that have the most COVID-19 related confirmations, recoveries, and deaths. Make sure to include all of the counts for the country, not just the counts for one area in the country. To do this we will need to sum all of the values for each country, create new data frames from these values, and use the package kable to convert those data frames into tables. Hint: packages like dplyr make group operations easy, but they are not necessary (though we will be relying on those packages in the future because of their ease of use). Without these packages, it is possible to sum each country's counts by subsetting the data frame using a list of countries available in the data set. Use a for loop to iterate through the data frame using the list of countries. For each country, calculate the count sum and assign this value to the list. -->
 
 #### Objective 4.2
-```{r ob4.2}
+```{r ob4.2-01}
+##### Deaths
+# Creates a new Data Frame that is aggregated totals based on the County/Region
+# Also sorts the Data Frame descending
+dfDeathsGrouped <- aggregate(dfDeaths["Total Deaths"], by=dfDeaths["Country/Region"], sum)
+dfDeathsGrouped <- dfDeathsGrouped[order(-dfDeathsGrouped$`Total Deaths`),]
 
+# Prints the top 5 countries
+head( as_tibble(dfDeathsGrouped), 5 )
 ```
+
+As we can see from the table above, aggregating all regions as of `r colnames(deaths)[ncol(deaths)]`, the greatest number of total deaths occurred in `r dfDeathsGrouped[1,1]`, with a total of `r round( dfDeathsGrouped[1,2] / 1000 , digits= 0 )`,000, followed by `r dfDeathsGrouped[2,1]`, `r dfDeathsGrouped[3,1]`, `r dfDeathsGrouped[4,1]`, and `r dfDeathsGrouped[5,1]`.
+
+```{r ob4.2-02}
+##### Recoveries
+# Creates a new Data Frame that is aggregated totals based on the County/Region
+# Also sorts the Data Frame descending
+dfRecoveredGrouped <- aggregate(dfRecovered["Total Recovered"], by=dfRecovered["Country/Region"], sum)
+dfRecoveredGrouped <- dfRecoveredGrouped[order(-dfRecoveredGrouped$`Total Recovered`),]
+
+# Prints the top 5 countries
+head( as_tibble(dfRecoveredGrouped), 5 )
+```
+
+Next, in this table, aggregating all regions as of `r colnames(recovered)[ncol(recovered)]`, the greatest number of total recoveries occurred in `r dfRecoveredGrouped[1,1]`, with a total of `r round( dfRecoveredGrouped[1,2] / 1000000 , digits=1 )` million, followed by `r dfRecoveredGrouped[2,1]`, `r dfRecoveredGrouped[3,1]`, `r dfRecoveredGrouped[4,1]`, and `r dfRecoveredGrouped[5,1]`.
+
+```{r ob4.2-03}
+##### Confirmed
+dfConfirmedGrouped <- aggregate(dfConfirmed["Total Confirmed"], by=dfConfirmed["Country/Region"], sum)
+dfConfirmedGrouped <- dfConfirmedGrouped[order(-dfConfirmedGrouped$`Total Confirmed`),]
+
+# Prints the top 5 countries
+head( as_tibble(dfConfirmedGrouped), 5 )
+```
+
+Finally, in this last table, aggregating all regions as of `r colnames(confirmed)[ncol(confirmed)]`, the greatest number of total confirmed cases occurred in `r dfConfirmedGrouped[1,1]`, with a total of `r round( dfConfirmedGrouped[1,2] / 1000000 , digits=1 )` million, followed by `r dfConfirmedGrouped[2,1]`, `r dfConfirmedGrouped[3,1]`, `r dfConfirmedGrouped[4,1]`, and `r dfConfirmedGrouped[5,1]`.
+
 
 <!-- ### GitHub Log -->
 <!-- ```{bash gitlog} -->
