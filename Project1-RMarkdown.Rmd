@@ -22,24 +22,24 @@ header-includes:
   - \usepackage{makecell}
   - \usepackage{xcolor}
 ---
-```{r setup1, include = FALSE}
-knitr::opts_chunk$set(include = FALSE)
+The following packages and libraries utilized in this project are provided for reference.
 
-#### Load necessary packages ####
-# * These packages are not necessary to complete the assignment and or only used
-#   to provide an example.
+```{r setup1, include = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(include = TRUE)
 
-# packages <- c("knitr", "kableExtra", "magrittr", "readr", "geosphere", "ggplot2", "tidyverse", "maps", "mapdata", "mapproj")
-
-# install_me <- packages[!(packages %in% installed.packages()[, "Package"])]
-# if (length(install_me)) install.packages(install_me)
-
-#  These are the libraries I used for Project 1
 library(ggplot2)
 library(dplyr)
 library(maps)
 library(mapproj)
 library(readr)
+library(ggplot2)
+library(ggrepel)
+library(readr)
+library(magrittr)
+library(tidyr)
+library(directlabels)
+library(geosphere)
+
 ```
 
 
@@ -65,11 +65,10 @@ Date fields are stored in MM/DD/YYYY format.
 <!-- CSIT-165's first objective is to determine where COVID-19 originated from. Predict where the origin started based on the number of cases on the first recorded day for confirmation, recovery, and death. Why do you believe this area to be the origin? Show this is the origin using a conditional statement if possible. -->
 
 ### Objective 1
-```{r ob1-01}
-# Identify working directory and set working directory to cloned repo
 
-#getwd()
-#setwd("C:/Users/micha/GitHub/Group-Project-1/Group-Project-1-Alex-Mike")
+The goal of objective 1 is to predict where COVID-19 originated from by reviewing reported cases on the first recorded day for confirmation, recovery, and death.  The following code was applied to data from John Hopkins University Center for Systems Science and Engineering for 2019 Novel Coronavirus to help predict it's origin:
+
+```{r ob1-01, message = FALSE, warning = FALSE}
 
 # Assign variable for file names
 
@@ -79,72 +78,220 @@ filename_conf = "time_series_covid19_confirmed_global.csv"
 
 # Read files and set variables for with the covid19 global deaths, recoveries, and confirmed cases, respectively
 deaths <- read_delim(file = filename, delim = ",")
-# head(deaths)
-
 recovered <- read_delim(file = filename_rec, delim = ",")
-# head(recovered)
-
 confirmed <- read_delim(file = filename_conf, delim = ",")
-# head(confirmed)
+head(deaths)
+```
+Initial review of datasets found them to all have exactly the same structure.  As shown above in the deaths table, the first four columns indicate the location of the reported while the remaining columns are reported numbers (integers) by consecutive days.  As shown, the first date recorded is January 22, 2020.  
 
-# Review of datasets revealed ordered columns with earliest date is 1/22/20 which is column 5 in the datasets
-# Select and view rows from datasets where that have positive number (greater than 0) of confirmed cases on 1/22/20
+The next step in determining the possible origin is to sort each of the tables from highest to lowest on the initial reported date of January 22, 2020.  By determining which locations had the highest initial incidents may indicate where the origin was.  We begin by analyzing the table showing the first confirmed cases.
+```{r ob1-02, message = FALSE, warning = FALSE}
+# Filter table to cases greater than zero for date 1/22/20
 cases <- confirmed[confirmed$`1/22/20` > 0, 1:5]
-# head(cases)
 
-# Sort cases to see where the highest number of cases are on the initial date
+# Sort cases from highest to lowest
 cases_sort <- cases[order(cases$'1/22/20', decreasing = TRUE),]
-# head(cases_sort)
+head(cases_sort)
+```
+As can be seen by the above table, Hubei Province in China has the highest initial confirmed cases of Covid-19 by a large margin.  By January 22, 2020 Hubei had 444 reported cases.  The next highest location with only 26 cases on January 22, 2020 was Guangdong.
 
-# Create a quick function to determine the max value on initial date for each file
+Now that we've looked at where the initial confirmed cases were highest, we'll repeat that procedure for deaths and recoveries.  We will create a function to automate this check and provide the top result for each data set.
+```{r obj1-03, message = FALSE, warning = FALSE}
+# Create a function to determine the max value on initial date for each file
 
 origin <- function(df){
-  print(df[which.max(df$`1/22/20`),1:2])
+  print(df[which.max(df$`1/22/20`),1:5])
 }
-
 # Check to country and province for each file with highest initial occurences
-
 origin(confirmed)
 origin(deaths)
 origin(recovered)
 ```
+After running each data set through our function, we find that Hubei China had the highest initial reported confirmed cases, deaths, *and* recoveries.  With the highest number of initial cases for all three categories, Hubei Province in China is predicted to be the origin of the COVID-19 virus.
 
-
-```{r ob1-02}
+To get a geographic sense of where Hubei, China is respective to the other top locations for initial confirmed cases, we created the following bubble map where the size and shade of the dots indicate the size of the initial confirmed cases by location.  Location names for the top 10 locations are provided.
+```{r ob1-04, message = FALSE, warning = FALSE}
 # Map the location of the intial occurences with bubble chart
-
-
 CH <- map_data("world") %>% filter(region=="China")
 
 # Create a data frame with data from China only
 cases_china <- cases_sort[cases_sort$`Country/Region` == "China",]
-# print(cases_china, n=Inf)
 
 # Change column names to make it easier to use mapping functions
-
 newcolnames <- c("Province","Country","lat","long","cases")
 colnames(cases_china) <- newcolnames
-# head(cases_china)
-
 
 # Use ggplot to plot top locations of initial confirmed cases using cases for bubble size
 ggplot() +
   geom_polygon(data = CH, aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
   geom_point(data=cases_china, aes(x=long, y=lat, alpha=cases, size = cases)) +
-  #geom_text_repel(data=cases_china %>% head(10), aes(x=long, y=lat, label=Province), size=3) +
-  #geom_point(data=cases_china_map %>% head(3), aes(x=long, y=lat), color="red", size=2) +
+  geom_text_repel(data=cases_china %>% head(10), aes(x=long, y=lat, label=Province), size=3) +
   theme(legend.position="none")
 ```
-
 
 
 <!-- Objective 2 -->
 <!-- Where is the most recent area to have a first confirmed case? If appropriate, please list all areas that had a first confirmed case if they occurred on the same day. -->
 
 ### Objective 2
-```{r ob2}
+
+The goal of objective 2 is to located the area of the world where the most recent *first* confirmed cases of Covid-19 have been reported.  In order to truly identify which areas of the globe have most recently reported an initial positive number of confirmed cases, we must compare each locations number of days without a confirmed cases.  Those areas with the longest period without a confirmed case, but now have confirmed cases, are the locations of the nearest reported outbreaks.
+
+Because each of the data set columns are in order by date, the last column of each data set represents the latest information.  After refreshing the data sets to get the most current date, the following code was applied to locate what areas of the world have their first confirmed cases.  We first work with the confirmed cases data set, and show the most recent date for which we have data.
+
+
+```{r ob2-01, message = FALSE, warning = FALSE}
+#Get the most recent date of data (last column of dataset) and assign to variable max_date
+dates <- colnames(confirmed)
+max_date <- dates[length(dates)]
+print(max_date)
+```
+
+The latest date we have for our data set is October 21, 2020.  Review of the data set also revealed that each column is cumulative, meaning that all locations start at zero and increase for each future column where additional cases are identified.  By seeing which areas of the world have gone the longest without a confirmed cases (most number of zeroes), we can determine which areas of the world have recently reported their first initial cases.  The following code was applied to solve this problem using the confirmed cases data set.
+
+```{r ob2-02, message = FALSE, warning = FALSE}
+# Add column that sums to total number of days with no confirmed cases
+confirmed$zeroes <- rowSums(confirmed[,5:ncol(confirmed)]==0)
+
+# Sort countries and states by most days without confirmed cases using max_date
+recent_sort <- confirmed[order(confirmed$zeroes, decreasing = TRUE),]
+
+# Reduce data set to top 10 with most number of consecutive days without a reported case
+recent_filter <- recent_sort[0:10,]
+
+# Show relevant columns of location and latest dates
+print(recent_filter %>% select(1:4,278:ncol(recent_filter)))
+```
+
+As can be seen by the above table, the area of the world with the highest number of consecutive days (zeroes) without a reported case is the Solomon Islands.  It's interesting to note here that the cruise ship Diamond Princess shows 242 days without a case, but shows zero cases on October 21st.  After reviewing the data, we found that the Diamond Princess reported a single case on May 1st but then removed that case on June 2nd.  It's best that this simply be omitted, but it's worth noting here.
+
+Following Solomon Islands the second location with the most recent reported initial cases is in Lesotho.  In order to see this more clearly, a line graph was built showing the number of confirmed cases by region by date so we can visually see the initial cases reported by these regions.
+
+```{r ob2-03, message = FALSE, warning = FALSE}
+# Pivot the recent_filter table for plotting
+recent_pvt <- recent_filter %>%
+  pivot_longer(5:ncol(recent_filter), names_to = "dates", values_to = "confirmed_cases")
+
+# Convert column date names to actual date values
+recent_pvt$dates <- as.Date(recent_pvt$dates , format = "%m/%d/%y")
+
+#Change column names to simplify using ggplot2 library
+new_cols <- c('state','country','lat','long','dates','confirmed_cases')
+colnames(recent_pvt) <- new_cols
+
+# Clarify origin name by removing NA from State if no Province/State is provided (is NA)
+recent_pvt$state[is.na(recent_pvt$state)] <- ""
+recent_pvt$region <- paste(recent_pvt$state,recent_pvt$country)
+
+# Plot top 10 locations with longest streak without cases and scale for effect
+ggplot(recent_pvt, mapping = aes(x = dates, y = confirmed_cases, color = region)) +
+  geom_line() +
+  geom_dl(aes(label = region), method = list(cex = 0.5,dl.combine("last.points"))) +
+  scale_y_continuous(name = "Cases", breaks = 0:10, limits=c(0,10))
+```
+
+As can be seen by the chart, the Solomon Islands is where the most recent initial cases of Covid-19 have been reported in the world.  All other locations other than those top 10 shown here reported cases well before the Solomon lslands.
+
+Because the data sets for deaths and recoveries has the same structure, we can create functions to repeat this process for locations reporting their first deaths and their first recoveries.
+
+```{r ob2-04, message = FALSE, warning = FALSE}
+# Create a function that returns the date of the first confirmed case
+# Take as inputs the data set(df), the state, and the country.  Defaults are NA.
+confirmation <- function(df = NA, state = NA, country = NA){
+# Create logic for when state is NA use country/region for data lookup
+    if (is.na(state)) {
+    column <- 'Country/Region'
+    state <- country
+    } else {
+      column <- 'Province/State'
+    }
+# Get row number where data resides for given location 
+  row <- which(df[,column] == state)
+# Get column number
+  column <- df$zeroes[row]
+# Create vector of row and column numbers and return
+  result <- c(row,column)
+  return(result)
+}
+
+# Create function where only dataframe is passed, but output is areas of most recent first cases
+most_recent <- function(df){
+  
+  #Find most current date in date set
+  max_date <- colnames(df[,ncol(df)])
+  
+  #Remove any rows where there are no reported cases
+  df <- df[df[,max_date] != 0,]
+  
+  #Add column that counts number of days with no cases
+  df$zeroes <- rowSums(df[,5:ncol(df)]==0)
+  
+  #Create vector of columns to specify data to pull  
+  columns <- c("Province/State","Country/Region","zeroes")
+  location <- df[,columns]
+  
+  #Create empty vectors
+  state_vec <- c()
+  country_vec <- c()
+  date_vec <- c()
+
+#Create for loop that pulls state, country, and use confirmation function to return date of first cases 
+  for (i in 1:nrow(df)) {
+    
+    #Get state and country for each row
+    col1 <- df[i,1]
+    col2 <- df[i,2]
+    state <- col1[[1]]
+    country <- col2[[1]]
+    
+    #Run confirmation function on data set, state, and country
+    location <- confirmation(df, state = state, country = country)
+    
+    #Append created vectors to store results
+    state_vec <- append(state_vec, state)
+    country_vec <- append(country_vec, country)
+    
+    #Get table position from return of confirmation function for date of most recent case
+    row <- location[1]
+    column <- location[2]
+    
+    #Retrieve resulting date and convert to date
+    result <- as.Date(colnames(df[row,column+5]),"%m/%d/%y")
+    
+    #Append date vector with dates for each state/region
+    date_vec <- append(date_vec,result)
+  }
+  # Get max date from vectored results (date of most recent reported case)
+  max <- max(date_vec)
+  
+  # Find position in vector
+  loc <- which(date_vec %in% max)
+  
+  # Convert final date to string for returned vector
+  final_date <- format(date_vec[loc], "%m/%d/%y")
+  
+  # Create vector with state, country, and date result
+  result2 <- c(state_vec[loc],country_vec[loc],final_date)
+  
+  #print result location with most recent case
+  print(result2, row.names = FALSE)
+}
+
+
+#add_zeroes <- function(df){
+#  df$zeroes <- rowSums(df[,5:ncol(df)]==0)
+#  return(df)
+#}
+
+#Pass each data set to function
+
+most_recent(confirmed)
+most_recent(deaths)
+most_recent(recovered)
 
 ```
+
+By passing each data set through the function, we can see that Solomon Islands has the most recent initial confirmed case on October 12th, the Netherland region of Bonaire, Sint Eustatius and Saba has the most recent initial deaths reported on September 16th, and Lesotho has the most recent initial recoveries reported on May 28th.
 
 <!-- Objective 3 -->
 <!-- How far away is this most recent case(s) from where the first confirmed case(s) occurred? Please provide answer(s) in terms of miles. Use the R package geosphere to calculate the distance between two coordinates in meters (geosphere::distm). You will need to convert the value returned by distm from meters to miles (this conversion is simple and can be found online). Please use a table or printed statement to describe what Province/State and Country/Region first confirmed cases occurred as well as the distance (in miles) away from the origin. Please print the following:
@@ -154,9 +301,72 @@ ggplot() +
 If more than one recent city exists, print the statement above for each city in order of distance from origin. -->
 
 ### Objective 3
-```{r ob3}
+
+Objective 3 is to determine how far away the most recent first case reported in the Solomon Island is from where the first confirmed case was reported, predicted to be Hubei, China.  The following code provides the solution in miles and plots a map showing their positions in the world.
+
+```{r ob3-01, message = FALSE, warning = FALSE}
+# Get latitude and longitude of Hubei from data set
+hubei_lat <- confirmed[which(confirmed[,"Province/State"] == "Hubei"),"Lat"]
+hubei_long <- confirmed[which(confirmed[,"Province/State"] == "Hubei"),"Long"]
+
+# Get latitude and longitude of Solomon Islands from data set
+solomon_lat <- confirmed[which(confirmed[,"Country/Region"] == "Solomon Islands"),"Lat"]
+solomon_long <- confirmed[which(confirmed[,"Country/Region"] == "Solomon Islands"),"Long"]
+
+# Create coordinate vectors for each location
+hubei_coord <- c(hubei_long[[1]],hubei_lat[[1]])
+solomon_coord <- c(solomon_long[[1]], solomon_lat[[1]])
+
+# Calculate distance in meters using geosphere::distm
+meters <- geosphere::distm(x = hubei_coord, y = solomon_coord)
+
+# Convert meters to miles
+ miles <- meters * 0.00062137
+
+# Assign variables
+origin_city <- "Hubei"
+distance_in_miles <- miles
+origin_country <- "China"
+recent_city <- "Solomon Islands"
+
+print(paste0(recent_city, " is ",round(distance_in_miles,0), " miles away from ", origin_city, ", ",origin_country,"."))
+```
+
+
+```{r ob3-02, message = FALSE, warning = FALSE}
+# World map is available in the maps package
+
+# No margin
+#par(mar=c(0,0,0,0))
+
+# World map
+map('world',
+    col="#f2f2f2", fill=TRUE, bg="lightgray", lwd=0.05,
+    mar=rep(0,4),border=0, ylim=c(-80,80) 
+)
+
+# Cities
+Hubei <- c(hubei_long[[1]],hubei_lat[[1]])
+Solomon_Islands <- c(solomon_long[[1]], solomon_lat[[1]])
+
+# Data frame
+data <- rbind(Hubei, Solomon_Islands) %>% 
+  as.data.frame()
+colnames(data) <- c("long","lat")
+
+# Dot for cities
+points(x=data$long, y=data$lat, col="slateblue", cex=3, pch=20)
+
+# Compute the connection between Hubei and Solomon Islands
+inter <- gcIntermediate(Hubei,  Solomon_Islands, n=50, addStartEnd=TRUE, breakAtDateLine=F)
+
+# Show this connection
+lines(inter, col="slateblue", lwd=2)
+
 
 ```
+
+Initial results seemed a little suprising, in that the map reveals that the locations are not that far apart from a global perspective.  What this perhaps reveals more is that remote locations such as islands which have more capability to isolate and prohibit travel may be able to better prevent initial cases from emerging.
 
 
 <!-- Objective 4 -->
@@ -172,7 +382,6 @@ Areas with high burden scores are expected to have large losses. -->
 
 ### Objective 4
 
-
 <!-- Objective 4.1 -->
 <!-- Which area of the world currently has the lowest risk score?
 - Which area of the world currently has the highest risk score?
@@ -183,24 +392,10 @@ Areas with high burden scores are expected to have large losses. -->
 - Why might it be helpful to calculate metrics like risk scores or burden scores for different areas of the world and what would its limitations be (what assumptions does it make and important variables might be left out)? -->
 
 #### Objective 4.1
-```{r ob4.1-01}
 
-##### remove this section once the project is ready to merge
-##### ---
-library(readr)
-library(dplyr)
-filename = "time_series_covid19_deaths_global.csv"
-filename_rec = "time_series_covid19_recovered_global.csv"
-filename_conf = "time_series_covid19_confirmed_global.csv"
-deaths <- read_delim(file = filename, delim = ",")
-# head(deaths)
-recovered <- read_delim(file = filename_rec, delim = ",")
-# head(recovered)
-confirmed <- read_delim(file = filename_conf, delim = ",")
-# head(confirmed)
-##### ---
-##### remove the above once project is ready to merge
+The purpose of objective 4.1 is to evaluate and compare the risk score and burden scores of locations throughout the world and provide insights into the results.  Results were determined using the following code:
 
+```{r ob4.1-01, message = FALSE, warning = FALSE}
 
 # Extract the country, province, and lat/long labels from each of the datasets
 # Remember that the Confirmed dataset has fewer rows of data than the others
@@ -234,7 +429,7 @@ exclzero.dfCombinedRisk <- filter(dfCombinedRisk, dfCombinedRisk$`Risk Score` > 
 
 ```
 
-```{r ob4.1-02, echo=FALSE}
+```{r ob4.1-02, echo=FALSE, message = FALSE, warning = FALSE}
 # Sorts by Risk Score (ascending)
 exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(exclzero.dfCombinedRisk$`Risk Score`),]
 
@@ -244,7 +439,7 @@ head( as_tibble(exclzero.dfCombinedRisk), 6 )
 
 The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0006. (Inf values are ignored.)
 
-```{r ob4.1-03, echo=FALSE}
+```{r ob4.1-03, echo=FALSE, message = FALSE, warning = FALSE}
 # Sorts by Risk Score (descending)
 exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(-exclzero.dfCombinedRisk$`Risk Score`),]
 
@@ -271,7 +466,10 @@ Additionally, the risk score uses the aggregate number of deaths and recoveries 
 <!-- You are asked to make three tables with the top 5 countries that have the most COVID-19 related confirmations, recoveries, and deaths. Make sure to include all of the counts for the country, not just the counts for one area in the country. To do this we will need to sum all of the values for each country, create new data frames from these values, and use the package kable to convert those data frames into tables. Hint: packages like dplyr make group operations easy, but they are not necessary (though we will be relying on those packages in the future because of their ease of use). Without these packages, it is possible to sum each country's counts by subsetting the data frame using a list of countries available in the data set. Use a for loop to iterate through the data frame using the list of countries. For each country, calculate the count sum and assign this value to the list. -->
 
 #### Objective 4.2
-```{r ob4.2-01}
+
+In objective 4.2 we create tables with the top five countries that have the most COVID-19 related confirmations, recoveries, and deaths using the following code:
+
+```{r ob4.2-01, message = FALSE, warning = FALSE}
 ##### Deaths
 # Creates a new Data Frame that is aggregated totals based on the County/Region
 # Also sorts the Data Frame descending
@@ -284,7 +482,7 @@ head( as_tibble(dfDeathsGrouped), 5 )
 
 As we can see from the table above, aggregating all regions as of `r colnames(deaths)[ncol(deaths)]`, the greatest number of total deaths occurred in `r dfDeathsGrouped[1,1]`, with a total of `r round( dfDeathsGrouped[1,2] / 1000 , digits= 0 )`,000, followed by `r dfDeathsGrouped[2,1]`, `r dfDeathsGrouped[3,1]`, `r dfDeathsGrouped[4,1]`, and `r dfDeathsGrouped[5,1]`.
 
-```{r ob4.2-02}
+```{r ob4.2-02, message = FALSE, warning = FALSE}
 ##### Recoveries
 # Creates a new Data Frame that is aggregated totals based on the County/Region
 # Also sorts the Data Frame descending
