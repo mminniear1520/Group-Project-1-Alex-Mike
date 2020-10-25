@@ -6,6 +6,7 @@ output:
   pdf_document:
     toc: true
     toc_depth: 3
+urlcolor: blue
 header-includes:
   - \usepackage{booktabs}
   - \usepackage{longtable}
@@ -37,7 +38,6 @@ library(tidyr)
 library(directlabels)
 library(geosphere)
 ```
-
 
 ## Background
 The World Health Organization has recently employed a new data science initiative, *CSIT-165*, that uses data science to characterize pandemic diseases.
@@ -348,12 +348,19 @@ Areas with high burden scores are expected to have large losses. -->
 
 The purpose of objective 4.1 is to evaluate and compare the risk score and burden scores of locations throughout the world and provide insights into the results.  Results were determined using the following code:
 
+```{r ob4setup, include=FALSE}
+# Something happens with the files here. Reloading the data set
+deaths <- read_delim(file = filename, delim = ",")
+recovered <- read_delim(file = filename_rec, delim = ",")
+confirmed <- read_delim(file = filename_conf, delim = ",")
+```
+
 ```{r ob4.1-01, message = FALSE, warning = FALSE}
 # Extract the country, province, and lat/long labels from each of the datasets
 # Remember that the Confirmed dataset has fewer rows of data than the others
-dfDeaths <- deaths[, c("Province/State", "Country/Region", "Lat", "Long")]
-dfRecovered <- recovered[, c("Province/State", "Country/Region", "Lat", "Long")]
-dfConfirmed <- confirmed[, c("Province/State", "Country/Region", "Lat", "Long")]
+dfDeaths <- deaths[, c("Province/State", "Country/Region")]
+dfRecovered <- recovered[, c("Province/State", "Country/Region")]
+dfConfirmed <- confirmed[, c("Province/State", "Country/Region")]
 # Extracts by country (by row) a matrix containing only the final column
 mTotalDeaths <- deaths[, ncol(deaths)]
 mTotalRecoveries <- recovered[, ncol(recovered)]
@@ -364,11 +371,11 @@ dfDeaths["Total Deaths"] <- mTotalDeaths
 dfRecovered["Total Recovered"] <- mTotalRecoveries
 dfConfirmed["Total Confirmed"] <- mTotalConfirmed
 # Merges the Deaths and Recovered tables together based on matches in the first four columns
-dfCombinedRisk <- merge(dfDeaths, dfRecovered, by=c("Province/State", "Country/Region", "Lat", "Long") )
+dfCombinedRisk <- merge(dfDeaths, dfRecovered, by=c("Province/State", "Country/Region") )
 # Adds a new column for Risk Score, calculated by the Total Deaths and Total Recoveries
 dfCombinedRisk["Risk Score"] <- dfCombinedRisk$"Total Deaths" / dfCombinedRisk$"Total Recovered"
 # Creates a new Data Frame with the totals
-dfCombinedRiskTotals <- data.frame("Province/State"="TOTALS", "Country/Region"=NA, "Lat"=NA, "Long"=NA, "Total Deaths"=sum(dfCombinedRisk$`Total Deaths`), "Total Recovered"=sum(dfCombinedRisk$`Total Recovered`) )
+dfCombinedRiskTotals <- data.frame("Province/State"="TOTALS", "Country/Region"=NA, "Total Deaths"=sum(dfCombinedRisk$`Total Deaths`), "Total Recovered"=sum(dfCombinedRisk$`Total Recovered`) )
 dfCombinedRiskTotals["Risk Score"] <- dfCombinedRiskTotals$Total.Deaths / dfCombinedRiskTotals$Total.Recovered
 # Creates a new Data Frame excluding rows with risk score of 0
 exclzero.dfCombinedRisk <- filter(dfCombinedRisk, dfCombinedRisk$`Risk Score` > 0)
@@ -381,7 +388,7 @@ exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(exclzero.dfCombinedRisk
 head( as_tibble(exclzero.dfCombinedRisk), 6 )
 ```
 
-The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0006. (Inf values are ignored.)
+The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0005. (Inf values are ignored.)
 
 ```{r ob4.1-03, echo=FALSE, message = FALSE, warning = FALSE}
 # Sorts by Risk Score (descending)
@@ -390,11 +397,11 @@ exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(-exclzero.dfCombinedRis
 head( as_tibble(exclzero.dfCombinedRisk), 6 )
 ```
 
-The area of the world that has the highest risk score is the United Kingdom, with a risk score of over 1761.  This figure appears to be an outlier, perhaps due to poor data collection, and the next highest risk score is Belgium, with a score of 0.56.
+The area of the world that has the highest risk score is Belgium, with a score of 0.49.
 
-Both of these individual countries' scores are vastly different compared to the global risk score of 0.06.
+Both of these individual countries' scores are vastly different compared to the global risk score of 0.05.
 
-The values for certain countries seems unreasonable.  For example, the UK has a risk score of over 1700, meaning that the total number of deaths is over 1,700 times the total number of recoveries.  Were this number true, it would signify that COVID-19 is fatal to anyone unfortunate to contract it.  However, this figure represents an outlier, likely due to low quality of data, given that the second highest risk score in the dataset is Belgium at 0.56.
+The values for certain countries seems unreasonable.  For example, the UK has a risk score of over 1700, meaning that the total number of deaths is over 1,700 times the total number of recoveries.  Were this number true, it would signify that COVID-19 is fatal to anyone unfortunate to contract it.  However, this figure represents an outlier, likely due to low quality of data, given that the second highest risk score in the dataset is Belgium at 0.49.
 
 On the other end of the spectrum, there are 27 countries with a risk score of 0, indicating that there were no deaths recorded in the country, but also that there was at least 1 recovery.  (If both were 0, the value would return as undefined.)  This may suggest that that particular country's death tally is not being tracked, or it could also mean that the country has done a splendid job at preventing deaths due to the virus.
 
@@ -447,7 +454,14 @@ head( as_tibble(dfConfirmedGrouped), 5 )
 Finally, in this last table, aggregating all regions as of `r colnames(confirmed)[ncol(confirmed)]`, the greatest number of total confirmed cases occurred in `r dfConfirmedGrouped[1,1]`, with a total of `r round( dfConfirmedGrouped[1,2] / 1000000 , digits=1 )` million, followed by `r dfConfirmedGrouped[2,1]`, `r dfConfirmedGrouped[3,1]`, `r dfConfirmedGrouped[4,1]`, and `r dfConfirmedGrouped[5,1]`.
 
 
-<!-- ### GitHub Log -->
+### GitHub Log
 <!-- ```{bash gitlog} -->
 <!-- git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b" -->
 <!-- ``` -->
+
+<!-- (uncomment (Shift+Ctrl+C) the below section if still running into issues with the above git log command) -->
+The GitHub project page can be viewed at:
+
+https://github.com/mminniear1520/Group-Project-1-Alex-Mike
+
+(Git code posted on the Project assignment page is not knitting properly according to the instructions.)
