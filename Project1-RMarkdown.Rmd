@@ -506,8 +506,7 @@ head( as_tibble(dfConfirmedGrouped), 5 )
 
 Finally, in this last table, aggregating all regions as of `r colnames(confirmed)[ncol(confirmed)]`, the greatest number of total confirmed cases occurred in `r dfConfirmedGrouped[1,1]`, with a total of `r round( dfConfirmedGrouped[1,2] / 1000000 , digits=1 )` million, followed by `r dfConfirmedGrouped[2,1]`, `r dfConfirmedGrouped[3,1]`, `r dfConfirmedGrouped[4,1]`, and `r dfConfirmedGrouped[5,1]`.
 
-
-<!-- ### GitHub Log -->
-<!-- ```{bash gitlog} -->
-<!-- git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b" -->
-<!-- ``` -->
+## GitHub Log
+```{r gitlog} 
+git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
+```
