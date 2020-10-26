@@ -467,7 +467,8 @@ https://github.com/mminniear1520/Group-Project-1-Alex-Mike
 (Git code posted on the Project assignment page is not knitting properly according to the instructions.)
 
 We were able to print the log from the command prompt but not from RMarkdown.  Below is the output for the 'main' branch.
-#From branch 'main'
+
+### From branch 'main'
 
 Subject: Fix bug with Confirmed data set calculation
 Author: alexanderyu-palomar
@@ -489,7 +490,7 @@ Author: alexanderyu-palomar
 Date: Sun, 25 Oct 2020 13:06:59 -0700
 Body:
 
-#From branch 'mike'
+### From branch 'mike'
 
 Subject: Updates to objectives 2 and 3 and text
 Author: Michael Minniear
