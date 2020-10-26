@@ -3,9 +3,10 @@ title: "Project 1"
 author: "Name:  Alex Yu \n Michael Minniear: "
 date: "`r Sys.Date()`"
 output:
-  html_document:
+  pdf_document:
     toc: true
     toc_depth: 3
+urlcolor: blue
 header-includes:
   - \usepackage{booktabs}
   - \usepackage{longtable}
@@ -26,22 +27,17 @@ The following packages and libraries utilized in this project are provided for r
 
 ```{r setup1, include = TRUE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(include = TRUE)
-
 library(ggplot2)
 library(dplyr)
 library(maps)
 library(mapproj)
 library(readr)
-library(ggplot2)
 library(ggrepel)
-library(readr)
 library(magrittr)
 library(tidyr)
 library(directlabels)
 library(geosphere)
-
 ```
-
 
 ## Background
 The World Health Organization has recently employed a new data science initiative, *CSIT-165*, that uses data science to characterize pandemic diseases.
@@ -69,13 +65,10 @@ Date fields are stored in MM/DD/YYYY format.
 The goal of objective 1 is to predict where COVID-19 originated from by reviewing reported cases on the first recorded day for confirmation, recovery, and death.  The following code was applied to data from John Hopkins University Center for Systems Science and Engineering for 2019 Novel Coronavirus to help predict it's origin:
 
 ```{r ob1-01, message = FALSE, warning = FALSE}
-
 # Assign variable for file names
-
 filename = "time_series_covid19_deaths_global.csv"
 filename_rec = "time_series_covid19_recovered_global.csv"
 filename_conf = "time_series_covid19_confirmed_global.csv"
-
 # Read files and set variables for with the covid19 global deaths, recoveries, and confirmed cases, respectively
 deaths <- read_delim(file = filename, delim = ",")
 recovered <- read_delim(file = filename_rec, delim = ",")
@@ -88,7 +81,6 @@ The next step in determining the possible origin is to sort each of the tables f
 ```{r ob1-02, message = FALSE, warning = FALSE}
 # Filter table to cases greater than zero for date 1/22/20
 cases <- confirmed[confirmed$`1/22/20` > 0, 1:5]
-
 # Sort cases from highest to lowest
 cases_sort <- cases[order(cases$'1/22/20', decreasing = TRUE),]
 head(cases_sort)
@@ -98,7 +90,6 @@ As can be seen by the above table, Hubei Province in China has the highest initi
 Now that we've looked at where the initial confirmed cases were highest, we'll repeat that procedure for deaths and recoveries.  We will create a function to automate this check and provide the top result for each data set.
 ```{r obj1-03, message = FALSE, warning = FALSE}
 # Create a function to determine the max value on initial date for each file
-
 origin <- function(df){
   print(df[which.max(df$`1/22/20`),1:5])
 }
@@ -113,14 +104,11 @@ To get a geographic sense of where Hubei, China is respective to the other top l
 ```{r ob1-04, message = FALSE, warning = FALSE}
 # Map the location of the intial occurences with bubble chart
 CH <- map_data("world") %>% filter(region=="China")
-
 # Create a data frame with data from China only
 cases_china <- cases_sort[cases_sort$`Country/Region` == "China",]
-
 # Change column names to make it easier to use mapping functions
 newcolnames <- c("Province","Country","lat","long","cases")
 colnames(cases_china) <- newcolnames
-
 # Use ggplot to plot top locations of initial confirmed cases using cases for bubble size
 ggplot() +
   geom_polygon(data = CH, aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +
@@ -152,13 +140,10 @@ The latest date we have for our data set is October 21, 2020.  Review of the dat
 ```{r ob2-02, message = FALSE, warning = FALSE}
 # Add column that sums to total number of days with no confirmed cases
 confirmed$zeroes <- rowSums(confirmed[,5:ncol(confirmed)]==0)
-
 # Sort countries and states by most days without confirmed cases using max_date
 recent_sort <- confirmed[order(confirmed$zeroes, decreasing = TRUE),]
-
 # Reduce data set to top 10 with most number of consecutive days without a reported case
 recent_filter <- recent_sort[0:10,]
-
 # Show relevant columns of location and latest dates
 print(recent_filter %>% select(1:4,278:ncol(recent_filter)))
 ```
@@ -171,18 +156,14 @@ Following Solomon Islands the second location with the most recent reported init
 # Pivot the recent_filter table for plotting
 recent_pvt <- recent_filter %>%
   pivot_longer(5:ncol(recent_filter), names_to = "dates", values_to = "confirmed_cases")
-
 # Convert column date names to actual date values
 recent_pvt$dates <- as.Date(recent_pvt$dates , format = "%m/%d/%y")
-
 #Change column names to simplify using ggplot2 library
 new_cols <- c('state','country','lat','long','dates','confirmed_cases')
 colnames(recent_pvt) <- new_cols
-
 # Clarify origin name by removing NA from State if no Province/State is provided (is NA)
 recent_pvt$state[is.na(recent_pvt$state)] <- ""
 recent_pvt$region <- paste(recent_pvt$state,recent_pvt$country)
-
 # Plot top 10 locations with longest streak without cases and scale for effect
 ggplot(recent_pvt, mapping = aes(x = dates, y = confirmed_cases, color = region)) +
   geom_line() +
@@ -213,7 +194,6 @@ confirmation <- function(df = NA, state = NA, country = NA){
   result <- c(row,column)
   return(result)
 }
-
 # Create function where only dataframe is passed, but output is areas of most recent first cases
 most_recent <- function(df){
   
@@ -234,7 +214,6 @@ most_recent <- function(df){
   state_vec <- c()
   country_vec <- c()
   date_vec <- c()
-
 #Create for loop that pulls state, country, and use confirmation function to return date of first cases 
   for (i in 1:nrow(df)) {
     
@@ -276,28 +255,21 @@ most_recent <- function(df){
   #print result location with most recent case
   print(result2, row.names = FALSE)
 }
-
-
 #add_zeroes <- function(df){
 #  df$zeroes <- rowSums(df[,5:ncol(df)]==0)
 #  return(df)
 #}
-
 #Pass each data set to function
-
 most_recent(confirmed)
 most_recent(deaths)
 most_recent(recovered)
-
 ```
 
 By passing each data set through the function, we can see that Solomon Islands has the most recent initial confirmed case on October 12th, the Netherland region of Bonaire, Sint Eustatius and Saba has the most recent initial deaths reported on September 16th, and Lesotho has the most recent initial recoveries reported on May 28th.
 
 <!-- Objective 3 -->
 <!-- How far away is this most recent case(s) from where the first confirmed case(s) occurred? Please provide answer(s) in terms of miles. Use the R package geosphere to calculate the distance between two coordinates in meters (geosphere::distm). You will need to convert the value returned by distm from meters to miles (this conversion is simple and can be found online). Please use a table or printed statement to describe what Province/State and Country/Region first confirmed cases occurred as well as the distance (in miles) away from the origin. Please print the following:
-
 {recent city} is {distance in miles} away from {origin city, origin country}
-
 If more than one recent city exists, print the statement above for each city in order of distance from origin. -->
 
 ### Objective 3
@@ -308,62 +280,47 @@ Objective 3 is to determine how far away the most recent first case reported in 
 # Get latitude and longitude of Hubei from data set
 hubei_lat <- confirmed[which(confirmed[,"Province/State"] == "Hubei"),"Lat"]
 hubei_long <- confirmed[which(confirmed[,"Province/State"] == "Hubei"),"Long"]
-
 # Get latitude and longitude of Solomon Islands from data set
 solomon_lat <- confirmed[which(confirmed[,"Country/Region"] == "Solomon Islands"),"Lat"]
 solomon_long <- confirmed[which(confirmed[,"Country/Region"] == "Solomon Islands"),"Long"]
-
 # Create coordinate vectors for each location
 hubei_coord <- c(hubei_long[[1]],hubei_lat[[1]])
 solomon_coord <- c(solomon_long[[1]], solomon_lat[[1]])
-
 # Calculate distance in meters using geosphere::distm
 meters <- geosphere::distm(x = hubei_coord, y = solomon_coord)
-
 # Convert meters to miles
  miles <- meters * 0.00062137
-
 # Assign variables
 origin_city <- "Hubei"
 distance_in_miles <- miles
 origin_country <- "China"
 recent_city <- "Solomon Islands"
-
 print(paste0(recent_city, " is ",round(distance_in_miles,0), " miles away from ", origin_city, ", ",origin_country,"."))
 ```
 
 
 ```{r ob3-02, message = FALSE, warning = FALSE}
 # World map is available in the maps package
-
 # No margin
 #par(mar=c(0,0,0,0))
-
 # World map
 map('world',
     col="#f2f2f2", fill=TRUE, bg="lightgray", lwd=0.05,
     mar=rep(0,4),border=0, ylim=c(-80,80) 
 )
-
 # Cities
 Hubei <- c(hubei_long[[1]],hubei_lat[[1]])
 Solomon_Islands <- c(solomon_long[[1]], solomon_lat[[1]])
-
 # Data frame
 data <- rbind(Hubei, Solomon_Islands) %>% 
   as.data.frame()
 colnames(data) <- c("long","lat")
-
 # Dot for cities
 points(x=data$long, y=data$lat, col="slateblue", cex=3, pch=20)
-
 # Compute the connection between Hubei and Solomon Islands
 inter <- gcIntermediate(Hubei,  Solomon_Islands, n=50, addStartEnd=TRUE, breakAtDateLine=F)
-
 # Show this connection
 lines(inter, col="slateblue", lwd=2)
-
-
 ```
 
 Initial results seemed a little suprising, in that the map reveals that the locations are not that far apart from a global perspective.  What this perhaps reveals more is that remote locations such as islands which have more capability to isolate and prohibit travel may be able to better prevent initial cases from emerging.
@@ -371,13 +328,9 @@ Initial results seemed a little suprising, in that the map reveals that the loca
 
 <!-- Objective 4 -->
 <!-- CSIT-165 characterizes diseases using different metrics. Risk score, risk_score, and burden score, burden_score, are particularly important for characterizing disease impact. Risk score is calculated as the ratio of deaths to recoveries, that is:
-
 risk = sum of deaths / sum of recoveries
-
 Areas that are characterized as being especially vulnerable to loss if they have higher risk scores. Death burden score is calculated as the product of confirmed and risk score, that is:
-
 burden = (sum of confirmed) x risk
-
 Areas with high burden scores are expected to have large losses. -->
 
 ### Objective 4
@@ -395,63 +348,60 @@ Areas with high burden scores are expected to have large losses. -->
 
 The purpose of objective 4.1 is to evaluate and compare the risk score and burden scores of locations throughout the world and provide insights into the results.  Results were determined using the following code:
 
-```{r ob4.1-01, message = FALSE, warning = FALSE}
+```{r ob4setup, include=FALSE}
+# Something happens with the files here. Reloading the data set
+deaths <- read_delim(file = filename, delim = ",")
+recovered <- read_delim(file = filename_rec, delim = ",")
+confirmed <- read_delim(file = filename_conf, delim = ",")
+```
 
+```{r ob4.1-01, message = FALSE, warning = FALSE}
 # Extract the country, province, and lat/long labels from each of the datasets
 # Remember that the Confirmed dataset has fewer rows of data than the others
-dfDeaths <- deaths[, c("Province/State", "Country/Region", "Lat", "Long")]
-dfRecovered <- recovered[, c("Province/State", "Country/Region", "Lat", "Long")]
-dfConfirmed <- confirmed[, c("Province/State", "Country/Region", "Lat", "Long")]
-
+dfDeaths <- deaths[, c("Province/State", "Country/Region")]
+dfRecovered <- recovered[, c("Province/State", "Country/Region")]
+dfConfirmed <- confirmed[, c("Province/State", "Country/Region")]
 # Extracts by country (by row) a matrix containing only the final column
 mTotalDeaths <- deaths[, ncol(deaths)]
 mTotalRecoveries <- recovered[, ncol(recovered)]
 mTotalConfirmed <- confirmed[, ncol(confirmed)]
-
 # Adds the sum vector to the corresponding Data Frames
 # The Data Frames will now hold both the four country/location labels and the total counts
 dfDeaths["Total Deaths"] <- mTotalDeaths
 dfRecovered["Total Recovered"] <- mTotalRecoveries
 dfConfirmed["Total Confirmed"] <- mTotalConfirmed
-
 # Merges the Deaths and Recovered tables together based on matches in the first four columns
-dfCombinedRisk <- merge(dfDeaths, dfRecovered, by=c("Province/State", "Country/Region", "Lat", "Long") )
-
+dfCombinedRisk <- merge(dfDeaths, dfRecovered, by=c("Province/State", "Country/Region") )
 # Adds a new column for Risk Score, calculated by the Total Deaths and Total Recoveries
 dfCombinedRisk["Risk Score"] <- dfCombinedRisk$"Total Deaths" / dfCombinedRisk$"Total Recovered"
-
 # Creates a new Data Frame with the totals
-dfCombinedRiskTotals <- data.frame("Province/State"="TOTALS", "Country/Region"=NA, "Lat"=NA, "Long"=NA, "Total Deaths"=sum(dfCombinedRisk$`Total Deaths`), "Total Recovered"=sum(dfCombinedRisk$`Total Recovered`) )
+dfCombinedRiskTotals <- data.frame("Province/State"="TOTALS", "Country/Region"=NA, "Total Deaths"=sum(dfCombinedRisk$`Total Deaths`), "Total Recovered"=sum(dfCombinedRisk$`Total Recovered`) )
 dfCombinedRiskTotals["Risk Score"] <- dfCombinedRiskTotals$Total.Deaths / dfCombinedRiskTotals$Total.Recovered
-
 # Creates a new Data Frame excluding rows with risk score of 0
 exclzero.dfCombinedRisk <- filter(dfCombinedRisk, dfCombinedRisk$`Risk Score` > 0)
-
 ```
 
 ```{r ob4.1-02, echo=FALSE, message = FALSE, warning = FALSE}
 # Sorts by Risk Score (ascending)
 exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(exclzero.dfCombinedRisk$`Risk Score`),]
-
 # show the sorted results of Total Deaths and Total Recoveries, displays as tibble
 head( as_tibble(exclzero.dfCombinedRisk), 6 )
 ```
 
-The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0006. (Inf values are ignored.)
+The area of the world that has the lowest risk score is Singapore, with a risk score of 0.0005. (Inf values are ignored.)
 
 ```{r ob4.1-03, echo=FALSE, message = FALSE, warning = FALSE}
 # Sorts by Risk Score (descending)
 exclzero.dfCombinedRisk <- exclzero.dfCombinedRisk[order(-exclzero.dfCombinedRisk$`Risk Score`),]
-
 # show the sorted results of Total Deaths and Total Recoveries, displays as tibble
 head( as_tibble(exclzero.dfCombinedRisk), 6 )
 ```
 
-The area of the world that has the highest risk score is the United Kingdom, with a risk score of over 1761.  This figure appears to be an outlier, perhaps due to poor data collection, and the next highest risk score is Belgium, with a score of 0.56.
+The area of the world that has the highest risk score is Belgium, with a score of 0.49.
 
-Both of these individual countries' scores are vastly different compared to the global risk score of 0.06.
+Both of these individual countries' scores are vastly different compared to the global risk score of 0.05.
 
-The values for certain countries seems unreasonable.  For example, the UK has a risk score of over 1700, meaning that the total number of deaths is over 1,700 times the total number of recoveries.  Were this number true, it would signify that COVID-19 is fatal to anyone unfortunate to contract it.  However, this figure represents an outlier, likely due to low quality of data, given that the second highest risk score in the dataset is Belgium at 0.56.
+The values for certain countries seems unreasonable.  For example, the UK has a risk score of over 1700, meaning that the total number of deaths is over 1,700 times the total number of recoveries.  Were this number true, it would signify that COVID-19 is fatal to anyone unfortunate to contract it.  However, this figure represents an outlier, likely due to low quality of data, given that the second highest risk score in the dataset is Belgium at 0.49.
 
 On the other end of the spectrum, there are 27 countries with a risk score of 0, indicating that there were no deaths recorded in the country, but also that there was at least 1 recovery.  (If both were 0, the value would return as undefined.)  This may suggest that that particular country's death tally is not being tracked, or it could also mean that the country has done a splendid job at preventing deaths due to the virus.
 
@@ -475,7 +425,6 @@ In objective 4.2 we create tables with the top five countries that have the most
 # Also sorts the Data Frame descending
 dfDeathsGrouped <- aggregate(dfDeaths["Total Deaths"], by=dfDeaths["Country/Region"], sum)
 dfDeathsGrouped <- dfDeathsGrouped[order(-dfDeathsGrouped$`Total Deaths`),]
-
 # Prints the top 5 countries
 head( as_tibble(dfDeathsGrouped), 5 )
 ```
@@ -488,7 +437,6 @@ As we can see from the table above, aggregating all regions as of `r colnames(de
 # Also sorts the Data Frame descending
 dfRecoveredGrouped <- aggregate(dfRecovered["Total Recovered"], by=dfRecovered["Country/Region"], sum)
 dfRecoveredGrouped <- dfRecoveredGrouped[order(-dfRecoveredGrouped$`Total Recovered`),]
-
 # Prints the top 5 countries
 head( as_tibble(dfRecoveredGrouped), 5 )
 ```
@@ -499,14 +447,71 @@ Next, in this table, aggregating all regions as of `r colnames(recovered)[ncol(r
 ##### Confirmed
 dfConfirmedGrouped <- aggregate(dfConfirmed["Total Confirmed"], by=dfConfirmed["Country/Region"], sum)
 dfConfirmedGrouped <- dfConfirmedGrouped[order(-dfConfirmedGrouped$`Total Confirmed`),]
-
 # Prints the top 5 countries
 head( as_tibble(dfConfirmedGrouped), 5 )
 ```
 
 Finally, in this last table, aggregating all regions as of `r colnames(confirmed)[ncol(confirmed)]`, the greatest number of total confirmed cases occurred in `r dfConfirmedGrouped[1,1]`, with a total of `r round( dfConfirmedGrouped[1,2] / 1000000 , digits=1 )` million, followed by `r dfConfirmedGrouped[2,1]`, `r dfConfirmedGrouped[3,1]`, `r dfConfirmedGrouped[4,1]`, and `r dfConfirmedGrouped[5,1]`.
 
-## GitHub Log
-```{r gitlog} 
-git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b"
-```
+
+### GitHub Log
+<!-- ```{bash gitlog} -->
+<!-- git log --pretty=format:"%nSubject: %s%nAuthor: %aN%nDate: %aD%nBody: %b" -->
+<!-- ``` -->
+
+<!-- (uncomment (Shift+Ctrl+C) the below section if still running into issues with the above git log command) -->
+The GitHub project page can be viewed at:
+
+https://github.com/mminniear1520/Group-Project-1-Alex-Mike
+
+(Git code posted on the Project assignment page is not knitting properly according to the instructions.)
+
+We were able to print the log from the command prompt but not from RMarkdown.  Below is the output for the 'main' branch.
+#From branch 'main'
+
+Subject: Fix bug with Confirmed data set calculation
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 14:34:04 -0700
+Body: Fixed a calculation bug with the Confirmed data set that was causing the incorrect values to be displayed.
+
+Subject: Merge pull request #2 from mminniear1520/mike
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 13:46:18 -0700
+Body: Add objectives 2 and 3 to RMarkdown
+
+Subject: Update file to main
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 13:45:05 -0700
+Body: Merging Obj 1-3 and Obj 4, prepped file for commit to main directly.
+
+Subject: Change output to pdf_document
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 13:06:59 -0700
+Body:
+
+#From branch 'mike'
+
+Subject: Updates to objectives 2 and 3 and text
+Author: Michael Minniear
+Date: Sun, 25 Oct 2020 18:02:43 -0700
+Body:
+
+Subject: Add objectives 2 and 3 to RMarkdown
+Author: Michael Minniear
+Date: Sun, 25 Oct 2020 10:31:05 -0700
+Body:
+
+Subject: Complete Obj 4.2 code
+Author: alexanderyu-palomar
+Date: Sat, 24 Oct 2020 17:57:33 -0700
+Body: Objective 4.2 code completed.  Tables are not appearing properly on my machine; may need some tweaking.
+
+Subject: Complete Obj 4.1
+Author: alexanderyu-palomar
+Date: Sat, 24 Oct 2020 01:37:53 -0700
+Body: Answer to Obj 4.1 completed. File knits but tibbles not displaying properly.
+
+Subject: Add partially completed answer to Objective 4.1
+Author: alexanderyu-palomar
+Date: Fri, 23 Oct 2020 01:14:35 -0700
+Body: Partial answer complete for Objective 4.1.  Need to embed charts between the narrative sections.
