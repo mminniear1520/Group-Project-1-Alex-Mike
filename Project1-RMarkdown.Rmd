@@ -75,7 +75,7 @@ recovered <- read_delim(file = filename_rec, delim = ",")
 confirmed <- read_delim(file = filename_conf, delim = ",")
 head(deaths)
 ```
-Initial review of datasets found them to all have exactly the same structure.  As shown above in the deaths table, the first four columns indicate the location of the reported while the remaining columns are reported numbers (integers) by consecutive days.  As shown, the first date recorded is January 22, 2020.  
+Initial review of datasets found them to all have exactly the same structure.  As shown above in the deaths table, the first four columns indicate the location of the reported while the remaining columns are reported numbers (integers) by consecutive days.  As shown, the first date recorded is January 22, 2020.
 
 The next step in determining the possible origin is to sort each of the tables from highest to lowest on the initial reported date of January 22, 2020.  By determining which locations had the highest initial incidents may indicate where the origin was.  We begin by analyzing the table showing the first confirmed cases.
 ```{r ob1-02, message = FALSE, warning = FALSE}
@@ -186,7 +186,7 @@ confirmation <- function(df = NA, state = NA, country = NA){
     } else {
       column <- 'Province/State'
     }
-# Get row number where data resides for given location 
+# Get row number where data resides for given location
   row <- which(df[,column] == state)
 # Get column number
   column <- df$zeroes[row]
@@ -196,62 +196,62 @@ confirmation <- function(df = NA, state = NA, country = NA){
 }
 # Create function where only dataframe is passed, but output is areas of most recent first cases
 most_recent <- function(df){
-  
+
   #Find most current date in date set
   max_date <- colnames(df[,ncol(df)])
-  
+
   #Remove any rows where there are no reported cases
   df <- df[df[,max_date] != 0,]
-  
+
   #Add column that counts number of days with no cases
   df$zeroes <- rowSums(df[,5:ncol(df)]==0)
-  
-  #Create vector of columns to specify data to pull  
+
+  #Create vector of columns to specify data to pull
   columns <- c("Province/State","Country/Region","zeroes")
   location <- df[,columns]
-  
+
   #Create empty vectors
   state_vec <- c()
   country_vec <- c()
   date_vec <- c()
-#Create for loop that pulls state, country, and use confirmation function to return date of first cases 
+#Create for loop that pulls state, country, and use confirmation function to return date of first cases
   for (i in 1:nrow(df)) {
-    
+
     #Get state and country for each row
     col1 <- df[i,1]
     col2 <- df[i,2]
     state <- col1[[1]]
     country <- col2[[1]]
-    
+
     #Run confirmation function on data set, state, and country
     location <- confirmation(df, state = state, country = country)
-    
+
     #Append created vectors to store results
     state_vec <- append(state_vec, state)
     country_vec <- append(country_vec, country)
-    
+
     #Get table position from return of confirmation function for date of most recent case
     row <- location[1]
     column <- location[2]
-    
+
     #Retrieve resulting date and convert to date
     result <- as.Date(colnames(df[row,column+5]),"%m/%d/%y")
-    
+
     #Append date vector with dates for each state/region
     date_vec <- append(date_vec,result)
   }
   # Get max date from vectored results (date of most recent reported case)
   max <- max(date_vec)
-  
+
   # Find position in vector
   loc <- which(date_vec %in% max)
-  
+
   # Convert final date to string for returned vector
   final_date <- format(date_vec[loc], "%m/%d/%y")
-  
+
   # Create vector with state, country, and date result
   result2 <- c(state_vec[loc],country_vec[loc],final_date)
-  
+
   #print result location with most recent case
   print(result2, row.names = FALSE)
 }
@@ -306,13 +306,13 @@ print(paste0(recent_city, " is ",round(distance_in_miles,0), " miles away from "
 # World map
 map('world',
     col="#f2f2f2", fill=TRUE, bg="lightgray", lwd=0.05,
-    mar=rep(0,4),border=0, ylim=c(-80,80) 
+    mar=rep(0,4),border=0, ylim=c(-80,80)
 )
 # Cities
 Hubei <- c(hubei_long[[1]],hubei_lat[[1]])
 Solomon_Islands <- c(solomon_long[[1]], solomon_lat[[1]])
 # Data frame
-data <- rbind(Hubei, Solomon_Islands) %>% 
+data <- rbind(Hubei, Solomon_Islands) %>%
   as.data.frame()
 colnames(data) <- c("long","lat")
 # Dot for cities
@@ -465,3 +465,53 @@ The GitHub project page can be viewed at:
 https://github.com/mminniear1520/Group-Project-1-Alex-Mike
 
 (Git code posted on the Project assignment page is not knitting properly according to the instructions.)
+
+We were able to print the log from the command prompt but not from RMarkdown.  Below is the output for the 'main' branch.
+#From branch 'main'
+
+Subject: Fix bug with Confirmed data set calculation
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 14:34:04 -0700
+Body: Fixed a calculation bug with the Confirmed data set that was causing the incorrect values to be displayed.
+
+Subject: Merge pull request #2 from mminniear1520/mike
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 13:46:18 -0700
+Body: Add objectives 2 and 3 to RMarkdown
+
+Subject: Update file to main
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 13:45:05 -0700
+Body: Merging Obj 1-3 and Obj 4, prepped file for commit to main directly.
+
+Subject: Change output to pdf_document
+Author: alexanderyu-palomar
+Date: Sun, 25 Oct 2020 13:06:59 -0700
+Body:
+
+#From branch 'mike'
+
+Subject: Updates to objectives 2 and 3 and text
+Author: Michael Minniear
+Date: Sun, 25 Oct 2020 18:02:43 -0700
+Body:
+
+Subject: Add objectives 2 and 3 to RMarkdown
+Author: Michael Minniear
+Date: Sun, 25 Oct 2020 10:31:05 -0700
+Body:
+
+Subject: Complete Obj 4.2 code
+Author: alexanderyu-palomar
+Date: Sat, 24 Oct 2020 17:57:33 -0700
+Body: Objective 4.2 code completed.  Tables are not appearing properly on my machine; may need some tweaking.
+
+Subject: Complete Obj 4.1
+Author: alexanderyu-palomar
+Date: Sat, 24 Oct 2020 01:37:53 -0700
+Body: Answer to Obj 4.1 completed. File knits but tibbles not displaying properly.
+
+Subject: Add partially completed answer to Objective 4.1
+Author: alexanderyu-palomar
+Date: Fri, 23 Oct 2020 01:14:35 -0700
+Body: Partial answer complete for Objective 4.1.  Need to embed charts between the narrative sections.
